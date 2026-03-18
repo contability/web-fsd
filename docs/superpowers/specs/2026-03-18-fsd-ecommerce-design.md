@@ -38,9 +38,9 @@ app/                              # Next.js App Router (라우팅만)
 
 src/
 ├── app/                          # FSD app 레이어
-│   ├── providers/                # QueryClient, MSW, Auth providers
-│   ├── styles/                   # global CSS
-│   └── msw/                      # MSW 핸들러, 브라우저 워커
+│   ├── providers/                # MSW, Auth providers
+│   ├── config/                   # 환경 변수, API base URL 등 설정
+│   └── styles/                   # global CSS
 │
 ├── pages/                        # FSD pages 레이어 (페이지 컴포지션)
 │   ├── home/
@@ -68,28 +68,28 @@ src/
 │       └── ui/
 │           └── signup-page.tsx
 │
-├── widgets/                      # 독립적 UI 블록
-│   ├── header/
+├── widgets/                      # 독립적 UI 블록 (여러 entity/feature를 조합)
+│   ├── header/                   # 네비게이션 + 장바구니 아이콘 + 인증 상태
 │   │   ├── index.ts
 │   │   └── ui/
 │   │       └── header.tsx
-│   ├── product-card/
+│   ├── product-card/             # Product 정보 표시 + 장바구니 담기 버튼 조합
 │   │   ├── index.ts
 │   │   └── ui/
 │   │       └── product-card.tsx
-│   └── cart-item/
+│   └── cart-item/                # CartItem + Product 정보 조합 + 수량 변경
 │       ├── index.ts
 │       └── ui/
 │           └── cart-item-row.tsx
 │
 ├── features/                     # 사용자 인터랙션 단위
-│   ├── auth/
+│   ├── auth/                     # 로그인/회원가입 폼 + 인증 로직
 │   │   ├── index.ts
 │   │   ├── ui/
 │   │   │   ├── login-form.tsx
 │   │   │   └── signup-form.tsx
 │   │   └── model/
-│   │       └── use-auth.ts
+│   │       └── use-auth.ts       # userApi 호출 → userStore.setUser()
 │   ├── add-to-cart/
 │   │   ├── index.ts
 │   │   └── ui/
@@ -100,26 +100,26 @@ src/
 │           ├── quantity-control.tsx
 │           └── remove-item-button.tsx
 │
-├── entities/                     # 비즈니스 엔티티
+├── entities/                     # 비즈니스 엔티티 (순수 도메인 모델 + 상태)
 │   ├── product/
 │   │   ├── index.ts              # Public API (barrel export)
 │   │   ├── model/
 │   │   │   ├── types.ts
-│   │   │   └── store.ts
+│   │   │   └── store.ts          # setProducts, setLoading만 (fetch 로직 없음)
 │   │   ├── api/
-│   │   │   └── product-api.ts
+│   │   │   └── product-api.ts    # fetch 함수 (store 변경 없이 데이터만 반환)
 │   │   └── ui/
 │   │       └── product-info.tsx
 │   ├── cart/
 │   │   ├── index.ts
 │   │   └── model/
-│   │       ├── types.ts
-│   │       └── store.ts
+│   │       ├── types.ts          # CartItem { productId: string; quantity: number }
+│   │       └── store.ts          # localStorage persist
 │   └── user/
 │       ├── index.ts
 │       ├── model/
 │       │   ├── types.ts
-│       │   └── store.ts
+│       │   └── store.ts          # setUser, clearUser만 (login/signup 로직 없음)
 │       └── api/
 │           └── user-api.ts
 │
@@ -129,11 +129,17 @@ src/
     │   ├── input.tsx
     │   └── index.ts
     ├── api/
-    │   └── base-api.ts           # fetch wrapper
+    │   └── base-api.ts           # fetch wrapper + 공통 에러 핸들링
     ├── lib/
     │   └── format-price.ts
+    ├── mocks/                    # MSW 핸들러 + 브라우저 워커 (테스트에서도 재사용)
+    │   ├── handlers.ts
+    │   ├── browser.ts
+    │   └── data.ts               # 목 데이터
+    ├── config/
+    │   └── index.ts              # API_BASE_URL 등
     └── types/
-        └── index.ts
+        └── index.ts              # ApiResponse<T>, PaginatedResponse<T> 등
 ```
 
 ## FSD Layer Dependency Rules
@@ -149,25 +155,36 @@ app → pages → widgets → features → entities → shared
 1. **단방향 의존:** 같은 레이어이거나 상위 레이어는 import 불가
 2. **Public API:** 각 모듈은 `index.ts`를 통해서만 외부에 노출
 3. **cross-import 금지:** 같은 레이어 내 다른 슬라이스 직접 import 불가
-4. **cross-import 해결:** 같은 레이어 간 데이터가 필요하면 상위 레이어에서 조합
+4. **cross-import 해결:** 같은 레이어 간 데이터가 필요하면 상위 레이어(widgets/pages)에서 조합
 
 ### cross-import 해결 예시 (CartItem ↔ Product)
 
+CartItem은 productId만 가지고, Product 정보가 필요한 곳에서는 상위 레이어에서 조합한다:
+
 ```typescript
-// entities/cart/model/types.ts — Product를 직접 참조하지 않음
-interface CartItem<T = unknown> {
-  product: T;
+// entities/cart/model/types.ts — Product를 참조하지 않음
+interface CartItem {
+  productId: string;
   quantity: number;
 }
 
 // widgets/cart-item/ui/cart-item-row.tsx — 상위 레이어에서 조합
 import { type CartItem } from '@/entities/cart';
-import { type Product } from '@/entities/product';
+import { useProductStore, type Product } from '@/entities/product';
 
-interface CartItemRowProps {
-  item: CartItem<Product>;
+function CartItemRow({ item }: { item: CartItem }): ReactElement {
+  const product = useProductStore((s) => s.getProductById(item.productId));
+  // product + item.quantity를 조합하여 렌더링
 }
 ```
+
+### 레이어별 책임 분리 원칙
+
+| 레이어 | 역할 | 포함하면 안 되는 것 |
+|--------|------|---------------------|
+| entities | 타입 정의, 순수 상태(set/clear), API 호출 함수 | 비즈니스 로직, 사용자 인터랙션 |
+| features | 사용자 액션 로직 (entity API 호출 → entity store 업데이트) | 다른 feature 참조 |
+| widgets | 여러 entity/feature를 조합하는 독립 UI 블록 | 비즈니스 로직 |
 
 ## Data Models
 
@@ -188,8 +205,8 @@ interface Product {
 ### CartItem
 
 ```typescript
-interface CartItem<T = unknown> {
-  product: T;
+interface CartItem {
+  productId: string;
   quantity: number;
 }
 ```
@@ -201,6 +218,16 @@ interface User {
   id: string;
   email: string;
   name: string;
+}
+```
+
+### Shared Types
+
+```typescript
+interface ApiResponse<T> {
+  data: T;
+  success: boolean;
+  error?: string;
 }
 ```
 
@@ -220,28 +247,48 @@ interface User {
 
 ### ProductStore (entities/product)
 
+entities 레이어의 store는 순수 상태 컨테이너. fetch 로직은 포함하지 않는다.
+
 ```typescript
 interface ProductStore {
   products: Product[];
   isLoading: boolean;
-  fetchProducts: () => Promise<void>;
+  error: string | null;
+  setProducts: (products: Product[]) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
   getProductById: (id: string) => Product | undefined;
 }
+```
+
+데이터 fetching은 pages 레이어나 features에서 수행:
+
+```typescript
+// pages/product-list/ui/product-list-page.tsx
+const { setProducts, setLoading, setError } = useProductStore();
+
+useEffect(() => {
+  setLoading(true);
+  fetchProducts()
+    .then((res) => setProducts(res.data))
+    .catch((err) => setError(err.message))
+    .finally(() => setLoading(false));
+}, []);
 ```
 
 ### CartStore (entities/cart, localStorage persist)
 
 ```typescript
 interface CartStore {
-  items: CartItem<Product>[];
-  addItem: (product: Product, quantity: number) => void;
+  items: CartItem[];
+  addItem: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  totalPrice: () => number;
-  totalItems: () => number;
 }
 ```
+
+`totalPrice`, `totalItems` 같은 파생 값은 Product 정보가 필요하므로 widgets/pages 레이어에서 계산한다.
 
 ### UserStore (entities/user)
 
@@ -249,19 +296,43 @@ interface CartStore {
 interface UserStore {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+  setUser: (user: User) => void;
+  clearUser: () => void;
+}
+```
+
+`login`/`signup` 로직은 `features/auth/model/use-auth.ts`에서 처리:
+
+```typescript
+// features/auth/model/use-auth.ts
+function useAuth() {
+  const { setUser, clearUser } = useUserStore();
+
+  const login = async (email: string, password: string): Promise<void> => {
+    const res = await loginApi(email, password);
+    setUser(res.data);
+  };
+
+  const signup = async (email: string, password: string, name: string): Promise<void> => {
+    const res = await signupApi(email, password, name);
+    setUser(res.data);
+  };
+
+  const logout = (): void => {
+    clearUser();
+  };
+
+  return { login, signup, logout };
 }
 ```
 
 ## Pages Overview
 
-| Page | Route | 구성 |
-|------|-------|------|
-| Home | `/` | Hero + 추천 상품 (widgets/product-card) |
-| Product List | `/products` | 상품 그리드 (widgets/product-card) |
-| Product Detail | `/products/:id` | entities/product UI + features/add-to-cart |
-| Cart | `/cart` | widgets/cart-item + 총액 + 결제 버튼 |
-| Login | `/login` | features/auth/login-form |
-| Signup | `/signup` | features/auth/signup-form |
+| Page | Route | 구성 | 데이터 소스 |
+|------|-------|------|-------------|
+| Home | `/` | Hero + 추천 상품 그리드 | fetchProducts → ProductStore |
+| Product List | `/products` | 상품 그리드 (widgets/product-card) | fetchProducts → ProductStore |
+| Product Detail | `/products/:id` | entities/product UI + features/add-to-cart | fetchProductById → ProductStore |
+| Cart | `/cart` | widgets/cart-item + 총액 계산 + 결제 버튼 | CartStore + ProductStore 조합 |
+| Login | `/login` | features/auth/login-form | features/auth/use-auth |
+| Signup | `/signup` | features/auth/signup-form | features/auth/use-auth |
