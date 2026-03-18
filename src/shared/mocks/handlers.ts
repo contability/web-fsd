@@ -3,33 +3,24 @@ import { mockProducts, mockUsers } from "./data";
 
 export const handlers = [
   http.get("/api/products", () => {
-    return HttpResponse.json({
-      data: mockProducts,
-      success: true,
-    });
+    return HttpResponse.json(mockProducts);
   }),
 
   http.get("/api/products/:id", ({ params }) => {
     const product = mockProducts.find((p) => p.id === params.id);
     if (!product) {
-      return HttpResponse.json(
-        { data: null, success: false, error: "Product not found" },
-        { status: 404 },
-      );
+      return new HttpResponse(null, { status: 404 });
     }
-    return HttpResponse.json({ data: product, success: true });
+    return HttpResponse.json(product);
   }),
 
   http.post("/api/auth/login", async ({ request }) => {
     const body = (await request.json()) as { email: string; password: string };
     const user = mockUsers.find((u) => u.email === body.email);
     if (!user) {
-      return HttpResponse.json(
-        { data: null, success: false, error: "Invalid credentials" },
-        { status: 401 },
-      );
+      return new HttpResponse(null, { status: 401 });
     }
-    return HttpResponse.json({ data: user, success: true });
+    return HttpResponse.json(user);
   }),
 
   http.post("/api/auth/signup", async ({ request }) => {
@@ -43,10 +34,10 @@ export const handlers = [
       email: body.email,
       name: body.name,
     };
-    return HttpResponse.json({ data: newUser, success: true }, { status: 201 });
+    return HttpResponse.json(newUser, { status: 201 });
   }),
 
   http.get("/api/auth/me", () => {
-    return HttpResponse.json({ data: null, success: false, error: "Not authenticated" }, { status: 401 });
+    return new HttpResponse(null, { status: 401 });
   }),
 ];

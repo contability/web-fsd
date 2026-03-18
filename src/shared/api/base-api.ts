@@ -8,12 +8,13 @@ export async function apiClient<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<ApiResult<T>> {
+  const { headers: customHeaders, ...restOptions } = options ?? {};
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...restOptions,
     headers: {
       "Content-Type": "application/json",
-      ...options?.headers,
+      ...customHeaders,
     },
-    ...options,
   });
 
   if (!response.ok) {
