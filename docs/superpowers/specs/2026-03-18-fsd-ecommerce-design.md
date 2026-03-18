@@ -39,8 +39,7 @@ app/                              # Next.js App Router (라우팅만)
 src/
 ├── app/                          # FSD app 레이어
 │   ├── providers/                # MSW, Auth providers
-│   ├── config/                   # 환경 변수, API base URL 등 설정
-│   └── styles/                   # global CSS
+│   └── styles/                   # global CSS (Next.js app/globals.css에서 import)
 │
 ├── pages/                        # FSD pages 레이어 (페이지 컴포지션)
 │   ├── home/
