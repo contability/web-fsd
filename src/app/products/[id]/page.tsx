@@ -1,5 +1,5 @@
 import { type ReactElement } from "react";
-import { ProductDetailPage } from "@/pages/product-detail";
+import { ProductDetailPage } from "@/views/product-detail";
 
 interface PageProps {
   params: Promise<{ id: string }>;

@@ -1,6 +1,6 @@
 import { type ReactElement } from "react";
-import { SignupPage } from "@/pages/signup";
+import { HomePage } from "@/views/home";
 
 export default function Page(): ReactElement {
-  return <SignupPage />;
+  return <HomePage />;
 }
