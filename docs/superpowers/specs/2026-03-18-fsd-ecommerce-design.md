@@ -41,7 +41,7 @@ src/
 │   ├── providers/                # MSW, Auth providers
 │   └── styles/                   # global CSS (Next.js app/globals.css에서 import)
 │
-├── pages/                        # FSD pages 레이어 (페이지 컴포지션)
+├── views/                        # FSD pages 레이어 (페이지 컴포지션, Next.js pages/ 충돌 회피)
 │   ├── home/
 │   │   ├── index.ts
 │   │   └── ui/
@@ -146,7 +146,7 @@ src/
 상위 레이어만 하위 레이어를 import할 수 있다:
 
 ```
-app → pages → widgets → features → entities → shared
+app → views(pages) → widgets → features → entities → shared
 ```
 
 ### 핵심 규칙
