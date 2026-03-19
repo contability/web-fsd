@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactElement } from "react";
-import { type Product } from "@/entities/product";
+import { type Product } from "@/entities/product/model/types";
 import { formatPrice } from "@/shared/lib/format-price";
-import { AddToCartButton } from "@/features/add-to-cart";
+import { AddToCartButton } from "@/features/add-to-cart/ui/add-to-cart-button";
 
 interface ProductCardProps {
   product: Product;

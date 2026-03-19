@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactElement, useState } from "react";
-import { Button } from "@/shared/ui";
-import { useCartStore } from "@/entities/cart";
+import { Button } from "@/shared/ui/button";
+import { useCartStore } from "@/entities/cart/model/store";
 
 interface AddToCartButtonProps {
   productId: string;

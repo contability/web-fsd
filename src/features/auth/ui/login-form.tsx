@@ -1,7 +1,8 @@
 "use client";
 
 import { type FormEvent, type ReactElement, useState } from "react";
-import { Button, Input } from "@/shared/ui";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { useAuth } from "../model/use-auth";
 
 interface LoginFormProps {

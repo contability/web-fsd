@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactElement } from "react";
-import { LoginForm } from "@/features/auth";
+import { LoginForm } from "@/features/auth/ui/login-form";
 
 export function LoginPage(): ReactElement {
   const router = useRouter();

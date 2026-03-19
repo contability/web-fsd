@@ -2,12 +2,10 @@
 
 import Image from "next/image";
 import { type ReactElement, useEffect } from "react";
-import {
-  useProductStore,
-  fetchProductById,
-  ProductInfo,
-} from "@/entities/product";
-import { AddToCartButton } from "@/features/add-to-cart";
+import { useProductStore } from "@/entities/product/model/store";
+import { fetchProductById } from "@/entities/product/api/product-api";
+import { ProductInfo } from "@/entities/product/ui/product-info";
+import { AddToCartButton } from "@/features/add-to-cart/ui/add-to-cart-button";
 
 interface ProductDetailPageProps {
   productId: string;

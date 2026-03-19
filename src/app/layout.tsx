@@ -1,6 +1,6 @@
 import { type ReactElement, type ReactNode } from "react";
 import { AppProvider } from "@/app/providers";
-import { Header } from "@/widgets/header";
+import { Header } from "@/widgets/header/ui/header";
 import "./globals.css";
 
 export const metadata = {

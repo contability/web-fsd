@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import { type ReactElement } from "react";
-import { type CartItem } from "@/entities/cart";
-import { useProductStore } from "@/entities/product";
+import { type CartItem } from "@/entities/cart/model/types";
+import { useProductStore } from "@/entities/product/model/store";
 import { formatPrice } from "@/shared/lib/format-price";
-import { QuantityControl, RemoveItemButton } from "@/features/update-cart-item";
+import { QuantityControl } from "@/features/update-cart-item/ui/quantity-control";
+import { RemoveItemButton } from "@/features/update-cart-item/ui/remove-item-button";
 
 interface CartItemRowProps {
   item: CartItem;
