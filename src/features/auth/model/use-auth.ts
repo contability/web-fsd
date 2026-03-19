@@ -1,5 +1,5 @@
-import { useUserStore } from "@/entities/user";
-import { loginApi, signupApi } from "@/entities/user";
+import { useUserStore } from "@/entities/user/model/store";
+import { loginApi, signupApi } from "@/entities/user/api/user-api";
 import { useState } from "react";
 
 interface UseAuthReturn {

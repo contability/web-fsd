@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { type ReactElement } from "react";
-import { useCartStore } from "@/entities/cart";
-import { useUserStore } from "@/entities/user";
-import { useAuth } from "@/features/auth";
+import { useCartStore } from "@/entities/cart/model/store";
+import { useUserStore } from "@/entities/user/model/store";
+import { useAuth } from "@/features/auth/model/use-auth";
 
 export function Header(): ReactElement {
   const items = useCartStore((s) => s.items);

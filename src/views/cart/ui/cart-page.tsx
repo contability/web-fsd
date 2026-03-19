@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { type ReactElement, useEffect } from "react";
-import { useCartStore } from "@/entities/cart";
-import { useProductStore, fetchProducts } from "@/entities/product";
+import { useCartStore } from "@/entities/cart/model/store";
+import { useProductStore } from "@/entities/product/model/store";
+import { fetchProducts } from "@/entities/product/api/product-api";
 import { formatPrice } from "@/shared/lib/format-price";
-import { Button } from "@/shared/ui";
-import { CartItemRow } from "@/widgets/cart-item";
+import { Button } from "@/shared/ui/button";
+import { CartItemRow } from "@/widgets/cart-item/ui/cart-item-row";
 
 export function CartPage(): ReactElement {
   const items = useCartStore((s) => s.items);

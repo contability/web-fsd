@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactElement } from "react";
-import { SignupForm } from "@/features/auth";
+import { SignupForm } from "@/features/auth/ui/signup-form";
 
 export function SignupPage(): ReactElement {
   const router = useRouter();

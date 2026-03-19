@@ -1,8 +1,9 @@
 "use client";
 
 import { type ReactElement, useEffect } from "react";
-import { useProductStore, fetchProducts } from "@/entities/product";
-import { ProductCard } from "@/widgets/product-card";
+import { useProductStore } from "@/entities/product/model/store";
+import { fetchProducts } from "@/entities/product/api/product-api";
+import { ProductCard } from "@/widgets/product-card/ui/product-card";
 
 export function ProductListPage(): ReactElement {
   const { products, isLoading, error, setProducts, setLoading, setError } =
